@@ -1,18 +1,21 @@
 import io
 from flask import Flask, request, send_file, render_template
-# Am adăugat ImageOps pentru a corecta orientarea imaginii
 from PIL import Image, ImageDraw, ImageFont, ImageOps 
 from datetime import datetime
 
 app = Flask(__name__)
 
-# --- Constante ---
-TEMPLATE_SIZE = (2048, 3508)
+# --- Constante ACTUALIZATE ---
+# MODIFICARE: Am corectat lățimea șablonului la 2480px
+TEMPLATE_SIZE = (2480, 3508)
+
+# MODIFICARE: Am recalculat TOATE coordonatele pe baza noii lățimi de 2480px
 BOXES = {
-    "top_left": (56, 311, 56 + 943, 311 + 1095),
-    "top_right": (56 + 943 + 56, 311, 56 + 943 + 56 + 937, 311 + 1095),
-    "bottom_left": (56, 1954, 56 + 943, 1954 + 1149),
-    "bottom_right": (56 + 943 + 56, 1954, 56 + 943 + 56 + 937, 1954 + 1149),
+    # Spațiul liber (2480 - 943 - 937 = 600px) a fost împărțit în 3 (stânga, centru, dreapta), rezultând un spațiu de 200px
+    "top_left": (200, 311, 200 + 943, 311 + 1095),
+    "top_right": (200 + 943 + 200, 311, 200 + 943 + 200 + 937, 311 + 1095),
+    "bottom_left": (200, 1954, 200 + 943, 1954 + 1149),
+    "bottom_right": (200 + 943 + 200, 1954, 200 + 943 + 200 + 937, 1954 + 1149),
 }
 FONT_FILE = "arial.ttf"
 
@@ -41,13 +44,8 @@ def generate_collage_endpoint():
         template_overlay = Image.open("template_overlay.png").convert("RGBA")
 
         for name, box_coords in BOXES.items():
-            
-            # --- BLOCUL DE COD CORECTAT ---
-            # 1. Deschidem imaginea
             user_img = Image.open(user_images_files[name])
-            # 2. Corectăm imediat orientarea pe aceeași variabilă
             user_img = ImageOps.exif_transpose(user_img)
-            # ---------------------------------
             
             scale = scales[name]
             
@@ -72,7 +70,9 @@ def generate_collage_endpoint():
             font = ImageFont.load_default()
         
         current_date = datetime.now().strftime("%d.%m.%Y")
-        draw.text((1750, 3400), current_date, font=font, fill="black")
+        
+        # MODIFICARE: Am ajustat poziția datei pentru noua lățime
+        draw.text((2100, 3400), current_date, font=font, fill="black")
 
         img_io = io.BytesIO()
         final_image.save(img_io, 'PNG')
