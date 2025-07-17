@@ -47,6 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (img) {
                 img.style.transform = `scale(${scaleValue})`;
             }
+
+            // --- MODIFICARE: Actualizăm valoarea afișată ---
+            // Găsim elementul span de lângă slider-ul curent
+            const valueSpan = event.target.parentElement.querySelector('.scale-value');
+            if (valueSpan) {
+                // Afișăm valoarea formatată cu două zecimale
+                valueSpan.textContent = parseFloat(scaleValue).toFixed(2);
+            }
+            // ------------------------------------------------
         });
     });
 
@@ -68,8 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Folosim o cale relativă pentru URL-ul API-ului,
-            // astfel va funcționa oriunde este publicată aplicația.
             const response = await fetch('/api/generate-collage', {
                 method: 'POST',
                 body: formData,
