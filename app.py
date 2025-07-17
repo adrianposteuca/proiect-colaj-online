@@ -1,6 +1,7 @@
 import io
 from flask import Flask, request, send_file, render_template
-from PIL import Image, ImageDraw, ImageFont
+# MODIFICARE: Am adăugat ImageOps pentru a corecta orientarea imaginii
+from PIL import Image, ImageDraw, ImageFont, ImageOps 
 from datetime import datetime
 
 # Am eliminat 'flask-cors' deoarece frontend-ul și backend-ul
@@ -47,6 +48,11 @@ def generate_collage_endpoint():
 
         for name, box_coords in BOXES.items():
             user_img = Image.open(user_images_files[name])
+
+            # *** LINIA CORECTOARE ***
+            # Aplicăm transpunerea EXIF pentru a roti imaginea în poziția corectă
+            user_img = ImageOps.exif_transpose(user_img_raw)
+            
             scale = scales[name]
             box_center_x = (box_coords[0] + box_coords[2]) / 2
             box_center_y = (box_coords[1] + box_coords[3]) / 2
