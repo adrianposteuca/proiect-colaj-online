@@ -1,15 +1,11 @@
 import io
 from flask import Flask, request, send_file, render_template
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-# MODIFICARE: Importăm Whitenoise
 from whitenoise import WhiteNoise
 from datetime import datetime
 
 app = Flask(__name__)
-# MODIFICARE: Împachetăm aplicația cu Whitenoise.
-# Acum, va servi automat fișierele din folderul "static".
 app.wsgi_app = WhiteNoise(app.wsgi_app, root="static/")
-
 
 # --- Constante ---
 TEMPLATE_SIZE = (2480, 3508)
@@ -28,6 +24,14 @@ def home():
 @app.route('/api/generate-collage', methods=['POST'])
 def generate_collage_endpoint():
     try:
+        # --- LINII NOI PENTRU DEBUGGING ---
+        # Vom afișa în log-urile OnRender exact ce primește serverul
+        print(">>> CERERE NOUĂ PRIMITĂ <<<")
+        print(f"Câmpuri TEXT primite (form): {list(request.form.keys())}")
+        print(f"Fișiere primite (files): {list(request.files.keys())}")
+        print("------------------------------------")
+        # ------------------------------------
+
         user_images_files = {
             "top_left": request.files['image_top_left'],
             "top_right": request.files['image_top_right'],
@@ -42,6 +46,7 @@ def generate_collage_endpoint():
             "bottom_right": float(request.form['scale_bottom_right']),
         }
 
+        # ... restul codului rămâne neschimbat ...
         final_image = Image.new("RGB", TEMPLATE_SIZE, "white")
         template_overlay = Image.open("template_overlay.png").convert("RGBA")
 
@@ -82,7 +87,8 @@ def generate_collage_endpoint():
         return send_file(img_io, mimetype='image/png')
 
     except Exception as e:
-        print(f"A apărut o eroare: {e}")
+        # Dacă apare o eroare, o vom vedea în log-uri
+        print(f"!!! A APĂRUT O EROARE ÎN TIMPUL PROCESĂRII: {e}")
         return str(e), 500
 
 if __name__ == '__main__':
