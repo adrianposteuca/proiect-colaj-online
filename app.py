@@ -46,7 +46,6 @@ def generate_collage_endpoint():
             "bottom_right": float(request.form['scale_bottom_right']),
         }
 
-        # ... restul codului rămâne neschimbat ...
         final_image = Image.new("RGB", TEMPLATE_SIZE, "white")
         template_overlay = Image.open("template_overlay.png").convert("RGBA")
 
