@@ -1,17 +1,19 @@
 import io
 from flask import Flask, request, send_file, render_template
-from PIL import Image, ImageDraw, ImageFont, ImageOps 
+from PIL import Image, ImageDraw, ImageFont, ImageOps
+# MODIFICARE: Importăm Whitenoise
+from whitenoise import WhiteNoise
 from datetime import datetime
 
 app = Flask(__name__)
+# MODIFICARE: Împachetăm aplicația cu Whitenoise.
+# Acum, va servi automat fișierele din folderul "static".
+app.wsgi_app = WhiteNoise(app.wsgi_app, root="static/")
 
-# --- Constante ACTUALIZATE ---
-# MODIFICARE: Am corectat lățimea șablonului la 2480px
+
+# --- Constante ---
 TEMPLATE_SIZE = (2480, 3508)
-
-# MODIFICARE: Am recalculat TOATE coordonatele pe baza noii lățimi de 2480px
 BOXES = {
-    # Spațiul liber (2480 - 943 - 937 = 600px) a fost împărțit în 3 (stânga, centru, dreapta), rezultând un spațiu de 200px
     "top_left": (200, 311, 200 + 943, 311 + 1095),
     "top_right": (200 + 943 + 200, 311, 200 + 943 + 200 + 937, 311 + 1095),
     "bottom_left": (200, 1954, 200 + 943, 1954 + 1149),
@@ -71,7 +73,6 @@ def generate_collage_endpoint():
         
         current_date = datetime.now().strftime("%d.%m.%Y")
         
-        # MODIFICARE: Am ajustat poziția datei pentru noua lățime
         draw.text((2100, 3400), current_date, font=font, fill="black")
 
         img_io = io.BytesIO()
