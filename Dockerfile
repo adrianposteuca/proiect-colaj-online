@@ -14,10 +14,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 5. Copiem restul fișierelor din proiect în container
 COPY . .
 
-# 6. Expunem portul pe care va rula aplicația în container.
-# Gunicorn va rula pe portul 8000.
-EXPOSE 8000
+# 6. Expunem portul pe care îl va folosi OnRender
+# Această linie este mai mult documentară; comanda de mai jos este cea importantă
+EXPOSE 10000
 
-# 7. Comanda care va porni aplicația când pornește containerul.
-# Folosim Gunicorn, serverul de producție.
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--worker-tmp-dir", "/dev/shm", "app:app"]
+# 7. MODIFICARE: Comanda care va porni aplicația pe portul dat de OnRender ($PORT)
+CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "--worker-tmp-dir", "/dev/shm", "app:app"]
