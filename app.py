@@ -1,14 +1,12 @@
 import io
 from flask import Flask, request, send_file, render_template
-# MODIFICARE: Am adăugat ImageOps pentru a corecta orientarea imaginii
+# Am adăugat ImageOps pentru a corecta orientarea imaginii
 from PIL import Image, ImageDraw, ImageFont, ImageOps 
 from datetime import datetime
 
-# Am eliminat 'flask-cors' deoarece frontend-ul și backend-ul
-# sunt acum servite de la aceeași adresă (origine).
 app = Flask(__name__)
 
-# --- Constante (așa cum le-am definit anterior) ---
+# --- Constante ---
 TEMPLATE_SIZE = (2048, 3508)
 BOXES = {
     "top_left": (56, 311, 56 + 943, 311 + 1095),
@@ -18,13 +16,10 @@ BOXES = {
 }
 FONT_FILE = "arial.ttf"
 
-# --- Rută pentru interfața web ---
 @app.route('/')
 def home():
-    # Servește fișierul index.html din folderul /templates
     return render_template('index.html')
 
-# --- Rută pentru API-ul de generare colaj ---
 @app.route('/api/generate-collage', methods=['POST'])
 def generate_collage_endpoint():
     try:
@@ -42,25 +37,30 @@ def generate_collage_endpoint():
             "bottom_right": float(request.form['scale_bottom_right']),
         }
 
-        # ... (restul logicii de procesare a imaginii rămâne neschimbată) ...
         final_image = Image.new("RGB", TEMPLATE_SIZE, "white")
         template_overlay = Image.open("template_overlay.png").convert("RGBA")
 
         for name, box_coords in BOXES.items():
+            
+            # --- BLOCUL DE COD CORECTAT ---
+            # 1. Deschidem imaginea
             user_img = Image.open(user_images_files[name])
-
-            # *** LINIA CORECTOARE ***
-            # Aplicăm transpunerea EXIF pentru a roti imaginea în poziția corectă
-            user_img = ImageOps.exif_transpose(user_img_raw)
+            # 2. Corectăm imediat orientarea pe aceeași variabilă
+            user_img = ImageOps.exif_transpose(user_img)
+            # ---------------------------------
             
             scale = scales[name]
+            
             box_center_x = (box_coords[0] + box_coords[2]) / 2
             box_center_y = (box_coords[1] + box_coords[3]) / 2
+
             new_width = int(user_img.width * scale)
             new_height = int(user_img.height * scale)
             scaled_img = user_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            
             paste_x = int(box_center_x - new_width / 2)
             paste_y = int(box_center_y - new_height / 2)
+            
             final_image.paste(scaled_img, (paste_x, paste_y))
 
         final_image.paste(template_overlay, (0, 0), template_overlay)
@@ -84,8 +84,5 @@ def generate_collage_endpoint():
         print(f"A apărut o eroare: {e}")
         return str(e), 500
 
-# Blocul de mai jos nu mai este necesar pentru producție,
-# deoarece serverul Gunicorn va porni aplicația.
-# Îl poți lăsa pentru testare locală.
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
